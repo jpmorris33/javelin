@@ -1,0 +1,26 @@
+#
+# Makefile core for IRE
+#
+
+game_obj = collision.o compat.o stubs.o menu.o game.o main.o \
+	   soundsys.o itgflic.o itg/gif.o itg/itg.o itg/itgcore.o
+
+#ed_obj = editor/about.o editor/backgrnd.o editor/bigmap.o editor/editor.o\
+#	 editor/editarea.o editor/gfx.o editor/igui.o editor/lights.o editor/objects.o\
+#	 editor/roof.o pe/pe_lang.o pe/pe_keyw.o pe/pe_sys.o\
+#	 console.o database.o dummy.o dummy_c.o fortifyj.o\
+#	 gamedata.o init.o linklist.o loaders.o loadfile.o loadpng.o\
+#	 loadsave.o map.o media.o mouse.o nuspeech.o\
+#	 object.o oscli.o resource.o textfile.o
+
+makejug_obj = utils/makejug.o
+
+unjug_obj = utils/unjug.o
+
+# Common graphics modules
+gfx_core_obj = graphics/iregraph.o
+
+gfx_sdl20_obj = \
+	 graphics/sdl2/ibitmap.o graphics/sdl2/ikeys.o \
+	 graphics/sdl2/imain.o graphics/sdl2/istartup.o
+

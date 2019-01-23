@@ -1,0 +1,169 @@
+#####################################
+#                                   #
+#  Makefile for IRE, Linux version  #
+#                                   #
+#####################################
+
+DEBUG=1
+
+# Define all the targets first
+all: javelin makejug unjug
+
+#library_bgui2
+
+##
+##  Configurables:
+##
+
+# Where to put binary on 'make install'?
+INSTALL_BIN = $/usr/games
+     
+# Where to put data on 'make install'?
+INSTALL_DATA = $/usr/share/games/ire/data
+
+# Where to put data on 'make install'?
+INI_FILES = $/etc/ire
+
+# Debugging and profiling
+#PROF += -pg
+ifneq ($(DEBUG),)
+	DBG += -g -O2
+endif
+
+# Optimisation
+ifeq ($(DBG),)
+OPT = -O2
+endif
+
+# Graphics backends
+GRAPHICS = sdl20
+
+
+#SOUNDLIB_C	 = -DUSE_SDL2SOUND `sdl2-config --cflags`
+#SOUNDLIB_L	 = `sdl2-config --libs` -lSDL2_mixer
+
+SOUNDLIB_C	 = 
+SOUNDLIB_L	 = -lmikmod
+
+# Graphics
+gfx_obj = $(gfx_core_obj)
+
+# SDL 2.0
+ifeq ($(GRAPHICS),sdl20)
+        GRAPHICSLIB_C       = -DUSE_SDL20 `sdl2-config --cflags`
+        GRAPHICSLIB_L       = `sdl2-config --libs`
+        gfx_obj             += $(gfx_sdl20_obj)
+endif
+
+
+
+# Use the C or C++ compiler
+CC                = gcc
+LD		  = gcc
+#CFLAGS            = -march=pentium -Wall 
+#CFLAGS            = -O3
+CFLAGS 		  =  -DASM=\"$(ASM)\" $(OPT) -Wall -Wno-write-strings  $(PROF) $(DBG) $(SOUNDLIB_C) $(GRAPHICSLIB_C)
+CFLAGS           += -I. -DPATH_FILES_DAT=\"/$(INSTALL_DATA)/\" -DPATH_FILES_CONF=\"/$(INI_FILES)/\"
+LDFLAGS		  =  $(GRAPHICSLIB_L) $(PROF) $(DBG)
+
+Xopts		  = 
+
+Lib_files         = -lgif -lstdc++
+#Lib_files         = -ljpeg -lpng -lstdc++ -lX11 -lXext 
+
+ifeq ($(ASM),no_asm)
+	CFLAGS	 += -DNO_ASM
+endif	
+
+# include the BGUI2 library
+# include deb/makefile.bgui2
+
+# include the IT-HE support library
+#include deb/makefile.ithe
+
+# Include the makefile core
+include makefile.all
+
+# Linux-dependent components
+lin_obj += audio/sdl2.o
+
+
+# Makefile rules
+
+javelin: $(game_obj) $(gfx_obj) $(lin_obj)
+	$(LD) $(Xopts) $(game_obj) $(gfx_obj) $(lin_obj) $(Lib_files) -o javelin $(LDFLAGS) $(SOUNDLIB_L)
+#	-rm -f ire.o
+
+makejug: $(makejug_obj)
+	$(LD) $(makejug_obj) -o utils/makejug
+
+unjug: $(unjug_obj)
+	$(LD) $(unjug_obj) -o utils/unjug
+
+ire-ed: svnrevision.h $(ed_obj) $(lin_obj)
+	$(LD) $(Xopts) $(ed_obj) $(gfx_obj) $(lin_obj) $(Lib_files) -o ../ire-ed $(LDFLAGS) $(SOUNDLIB_L)
+#	-rm -f editor.o
+
+finished:
+	@echo "All done"
+
+#svnrevision.h:
+#	echo "#define SVNREVISION \"-rev-"`svn info | grep Revision | cut -d \  -f 2`"\"" > svnrevision.h
+#	echo "#define SVNREVISION \"-rev-"`svnversion`"\"" > svnrevision.h
+
+
+%.o: %.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
+%.o: %.cc
+	$(CC) -c $(CFLAGS) $< -o $@
+
+%.o: %.cpp
+	$(CC) -c $(CFLAGS) $< -o $@
+
+%.o: %.S
+	$(CC) -c $(CFLAGS) $< -o $@
+
+# Assembler formats
+ifeq ($(ASM),i386)
+%.o: %.asm
+	nasm -f elf32 $< -o $@
+endif
+
+ifeq ($(ASM),amd64)
+%.o: %.asm
+	yasm -f elf64 $< -o $@
+endif
+
+ifeq ($(ASM),arm)
+%.o: %.asm
+	# fasmarm $< $@
+endif
+
+clean:
+	-rm -f $(game_obj)
+	-rm -f $(gfx_obj)
+	-rm -f $(lin_obj)
+	-rm -f javelin
+#	-rm -f ../ire-ed
+	-rm -f utils/unjug
+	-rm -f utils/makejug
+
+#	echo "#define SVNREVISION \"-rev-"`svn info | grep Revision | cut -d \  -f 2`"\"" > svnrevision.h
+
+distclean:
+	-rm -f $(game_obj)
+	-rm -f $(gfx_obj)
+	-rm -f $(lin_obj)
+	-rm -f javelin
+#	-rm -f ../ire-ed
+	-rm -f utils/unjug
+	-rm -f utils/makejug
+#	-rm -f bootlog.* game.cfg
+
+install:
+	echo "not implemented"
+#		install -d $(INSTALL_BIN) $(INSTALL_DATA) $(INI_FILES)
+#		install ../ire-engine $(INSTALL_BIN)
+#		install ../ire-ed $(INSTALL_BIN)
+#		install -m644 ../game.ini $(INI_FILES)/game.ini
