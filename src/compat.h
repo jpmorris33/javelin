@@ -19,5 +19,9 @@ extern void blitToScreen(unsigned char *swapscreen);
 extern void blitFromScreen(unsigned char *swapscreen);
 extern void copyScreen(unsigned char *dest, unsigned char *src);
 extern int getw16(FILE *fp);
+extern void putw16(unsigned short s, FILE *fp);
+
+extern char **igetdir(const char *dir, const char *filetype, int *items);
+extern void ifreedir(char **list, int items);
 
 #endif

@@ -13,10 +13,3 @@ void gotoxy(int x, int y) {
 }
 
 
-void putcode747(char code) {
-	printf("demo recording not yet supported\n");
-}
-char getcode747() {
-	printf("demo playback not yet supported\n");
-}
-

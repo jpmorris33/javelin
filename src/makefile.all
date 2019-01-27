@@ -2,7 +2,7 @@
 # Makefile core for IRE
 #
 
-game_obj = collision.o compat.o stubs.o menu.o game.o main.o \
+game_obj = collision.o compat.o stubs.o menu.o game.o main.o demo.o \
 	   soundsys.o itgflic.o itg/gif.o itg/itg.o itg/itgcore.o
 
 #ed_obj = editor/about.o editor/backgrnd.o editor/bigmap.o editor/editor.o\

@@ -48,6 +48,7 @@
 #define SPRSIZE 512
 
 #include "soundsys.h"
+#include "demo.h"
 
 int Jload_RSD();
 
@@ -254,7 +255,7 @@ do	{
 		break;
 
 		case 2:
-//		demo();
+		demo();
 		break;
 		}
 }while (choice!=3);
@@ -1174,30 +1175,11 @@ void read_monsters(FILE *fp, long length) {
 		blockptr+=2;
 		mt[ctr].alist2 = value;
 
-//		memcpy(&value,blockptr,2);
-//		blockptr+=2;
 		mt[ctr].alength = *blockptr++;
-
-//		memcpy(&value,blockptr,2);
-//		blockptr+=2;
 		mt[ctr].deadly = *blockptr++;
-
-//		memcpy(&value,blockptr,2);
-//		blockptr+=2;
 		mt[ctr].lift = *blockptr++;
-
-//		memcpy(&value,blockptr,2);
-//		blockptr+=2;
 		mt[ctr].itemno = *blockptr++;
-
-//		memcpy(&value,blockptr,2);
-//		blockptr+=2;
-		mt[ctr].spare =*blockptr++;
-		if(mt[ctr].spare != 0) {
-//			printf("Monster %d has spare flag of %d\n",ctr,mt[ctr].spare);
-//			G_error("That may not be right", mt[ctr].spare);
-		}
-
+		mt[ctr].conveyor =*blockptr++;
 	}
 
 	free(block);

@@ -59,7 +59,7 @@ int memGIF(unsigned char *src,unsigned char *dest,palette pal,unsigned int len)
 			printf("GIF record error %d\n", gifhandle->Error);
 			return 0;
 		}
-		printf("Record %d\n",record);
+//		printf("Record %d\n",record);
 
 		switch(record) {
 			case IMAGE_DESC_RECORD_TYPE:

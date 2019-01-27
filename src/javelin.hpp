@@ -62,7 +62,7 @@ struct MoNtYpE
 	char deadly;		// 1 is deadly
 	char lift;			// 1 is lift
 	unsigned char itemno;	// 0 if not collectable, else item no.
-	char spare;		// for later
+	char conveyor;		// 1 if conveyor belt
 	};
 
 struct TuTl
@@ -97,8 +97,12 @@ extern void ST_error(char *errm);
 extern void Black_Spot(FILE *fp);
 extern void game(int los);
 extern int menu();
+extern void notify(char *one,char *two);
 void setup_screen(int l);
-void printn(unsigned long thenum,int x,int y);
+extern void printn(unsigned long thenum,int x,int y);
+extern void print(char x,char y,const char *prt,unsigned char *scr,unsigned char fc,unsigned char bc);
+extern void print2(int x,int y,const char *prt,unsigned char *scr,unsigned char fc,unsigned char bc);
+
 int test_BG_hit(int x,int y,int s);
 extern "C" void block_and(int length,unsigned char *source,unsigned char *dest);
 extern "C" int collide(int length,unsigned char *source);

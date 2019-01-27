@@ -33,7 +33,7 @@
 #include "spira.idf"
 #include "javelin.hpp"
 
-int framerate=NULL;
+int framerate=0;
 
 pattern disintegrate = {
 	0x01,0x76,0x17,0x63,0x23,0x59,0x29,0x81,0x55,0x04,
@@ -58,7 +58,7 @@ char gotit[256];
 char clpos[]={76,85,94,49,40,31,22,112,103};
 char string[128];
 
-char code,rx;
+unsigned char democode=0;
 char **menulist;
 
 extern struct SG_struct savegame;
@@ -77,18 +77,12 @@ char no_of_clothes;
 extern char songname[25][25];
 void maintain_monsters(int l);
 //void maintain_huds();
-void print(char x,char y,const char *prt,unsigned char *scr,unsigned char fc,unsigned char bc);
-void print2(int x,int y,const char *prt,unsigned char *scr,unsigned char fc,unsigned char bc);
 int save();
 int load();
 int sure();
 void soundsetup();
 void getsong();
 unsigned char get_name();
-void putcode747(char code);
-char getcode747();
-void play747(char *filename);
-void rec747(char *filename);
 void notify(char *one,char *two);
 char* get_str(char *bufx,int lenn);
 int scroll(char length,char width);
@@ -117,7 +111,6 @@ char alive=1;
 unsigned int speed=50000;
 clock_t start;
 lives=LIVES;
-rx=0;
 
 S_Fadeout();
 S_PlaySong(2);
@@ -127,7 +120,7 @@ no_of_clothes=0;
 
 //gr_start_kbd_grab();
 
-code=0;
+democode=0;
 
 while(lives>0&&lives!=-1) {
 
@@ -181,34 +174,34 @@ while(lives>0&&lives!=-1) {
 		tbg[0].block_put_sprite(ox,oy,swap_screen);
 
 		if(los==2)
-			putcode747(code);
-		code=0;
+			putcode747(democode);
+		democode=0;
 		if(los==3)
-			code=getcode747();
+			democode=getcode747();
 
 		if(IRE_TestKey(IREKEY_Q))
 			{
 			alive=0;
 			if(los==2)
-				code=8;
+				democode=8;
 			}
 
-/*
+
 		// DEMO stuff, refactor
 		if(los>1)
-			if(code&8||(los==3&&idx747>demolen))
+			if(democode&8||(los==3&&idx747>demolen))
 				{
 				alive=2;
 				lives=0;
 				}
-*/
+
 		if(IRE_TestKey(IREKEY_ESC))
 			if(sure())
 				{
 				alive=2;
 				lives=0;
 				if(los==2)
-					code=8;
+					democode=8;
 				}
 
 
@@ -264,9 +257,9 @@ while(lives>0&&lives!=-1) {
 
 		maintain_monsters(l);
 
-		if((IRE_TestKey(IREKEY_RIGHT)&&los!=3)||code&2) {
+		if((IRE_TestKey(IREKEY_RIGHT)&&los!=3)||democode&2) {
 			if(los==2)
-				code+=2;
+				democode+=2;
 
 			if(!test_BG_hit(x+8,y,w_ctr)) {
 				x+=4;
@@ -358,10 +351,10 @@ while(lives>0&&lives!=-1) {
 
 //		printf("Looking for key %d\n", IREKEY_LEFT);
 
-		if((IRE_TestKey(IREKEY_LEFT)&&los!=3)||code&1)
+		if((IRE_TestKey(IREKEY_LEFT)&&los!=3)||democode&1)
 			{
 			if(los==2)
-				code+=1;
+				democode+=1;
 			if(!test_BG_hit(x-8,y,w_ctr+8))
 				{
 				x-=4;
@@ -382,13 +375,13 @@ while(lives>0&&lives!=-1) {
 
 			}
 
-		if(((IRE_TestKey(IREKEY_UP)&&los!=3)||code&4)&&!IRE_TestKey(IREKEY_TAB)&&js==0)
+		if(((IRE_TestKey(IREKEY_UP)&&los!=3)||democode&4)&&!IRE_TestKey(IREKEY_TAB)&&js==0)
 			{
 //			callgate(DWAV1,1);
 			S_PlayWave(0,SND_PLAYER);
 			js=JUMP;
 			if(los==2)
-				code+=4;
+				democode+=4;
 			}
 
 		if(js>0)
@@ -431,29 +424,35 @@ while(lives>0&&lives!=-1) {
 			tbg[2].block_put_sprite(48,10,swap_screen);
 			fbox2(180,0,62,8,BLACK,screen);
 			fbox2(170,0,62,8,BLACK,swap_screen);
-//			printn(idx747,180,0);
+			printn(idx747,180,0);
 			printn(no_of_clothes,230,0);
 			}
 */
-	for(int ctr=0;ctr<no_m;ctr++)
-		if(mt[(*mons)[l][ctr].mtype].deadly==1)
-		if(test_FG_hit(x,y,man_shape,ctr,l))
-			alive=0;
-
-	for(ctr=0;ctr<no_m;ctr++)
-		if(mt[(*mons)[l][ctr].mtype].itemno>0&&mt[(*mons)[l][ctr].mtype].itemno<250)
-		if(test_FG_hit(x,y,man_shape,ctr,l))
-			{
-			(*mons)[l][no_m].XY=255;
-			tfg[ctr].block_put_sprite(mx[ctr],my[ctr],swap_screen);
-			gotit[(*mons)[l][ctr].mtype]=1;
-			no_of_clothes++;
-			no_m--;
-			S_PlayWave(2,SND_PLAYER);
+	// See if the player hit a monster
+	for(int ctr=0;ctr<no_m;ctr++) {
+		if(mt[(*mons)[l][ctr].mtype].deadly==1) {
+			if(test_FG_hit(x,y,man_shape,ctr,l)) {
+				alive=0;
 			}
+		}
+	}
+
+	// See if the player hit a collectible (technically also monsters)
+	for(ctr=0;ctr<no_m;ctr++) {
+		if(mt[(*mons)[l][ctr].mtype].itemno>0&&mt[(*mons)[l][ctr].mtype].itemno<250) {
+			if(test_FG_hit(x,y,man_shape,ctr,l)) {
+				(*mons)[l][no_m].XY=255;
+				tfg[ctr].block_put_sprite(mx[ctr],my[ctr],swap_screen);
+				gotit[(*mons)[l][ctr].mtype]=1;
+				no_of_clothes++;
+				no_m--;
+				S_PlayWave(2,SND_PLAYER);
+			}
+		}
+	}
 
 	for(ctr=0;ctr<no_m;ctr++)
-		if(mt[(*mons)[l][ctr].mtype].lift==1||mt[(*mons)[l][ctr].mtype].spare==1)
+		if(mt[(*mons)[l][ctr].mtype].lift==1||mt[(*mons)[l][ctr].mtype].conveyor==1)
 		if(test_FG_hit(x,y+4,man_shape,ctr,l))
 			{
 			if(!test_BG_hit(x+mdx[ctr],y+4,man_shape))
@@ -830,7 +829,7 @@ for(ctr=0;ctr<no_m;ctr++)
 
 for(ctr=0;ctr<no_m;ctr++)
 	{
-	if(!mt[(*mons)[l][ctr].mtype].spare)
+	if(!mt[(*mons)[l][ctr].mtype].conveyor)
 		{
 		mx[ctr]+=mdx[ctr];
 		my[ctr]+=mdy[ctr];
@@ -849,7 +848,7 @@ for(ctr=0;ctr<no_m;ctr++)
 	///
 
 
-	if((mx[ctr]>284||mx[ctr]<0||(t1>=244&&t1<=250))&&!mt[(*mons)[l][ctr].mtype].spare)
+	if((mx[ctr]>284||mx[ctr]<0||(t1>=244&&t1<=250))&&!mt[(*mons)[l][ctr].mtype].conveyor)
 		{
 		mx[ctr]-=mdx[ctr];
 		mdx[ctr]=-mdx[ctr];
@@ -1209,12 +1208,12 @@ do      {
 
 
 fbox2(x+1,y+12,100,9,254,spare_screen);
-for(int ctr=0;ctr<buf_ptr;ctr++)
-	if(buf[ctr]>=' ')
-		{
+for(int ctr=0;ctr<buf_ptr;ctr++) {
+	if(buf[ctr]>=' ') {
 		printbuf[0]=buf[ctr];
 		print2((ctr*8)+x+8,y+13,printbuf,spare_screen,0,254);
-		}
+	}
+}
 
 	blitToScreen(spare_screen);
 	gc=getch();
@@ -1581,13 +1580,29 @@ if(length<20)
 
 	do
 		{
+		gc=0;
+		if(IRE_TestKey(IREKEY_UP)) {
+			gc='u';
+		}
+		if(IRE_TestKey(IREKEY_DOWN)) {
+			gc='d';
+		}
+		if(IRE_TestKey(IREKEY_ESC)) {
+			gc=27;
+		}
+		if(IRE_TestKey(IREKEY_ENTER)) {
+			gc=13;
+		}
+		if(gc)
+			IRE_ClearKeyBuf();
+
 //		blit(screen,swap_screen);
 		blitToScreen(swap_screen);
-		gc=getch();
+//		gc=getch();
 		print2(x+4,y+7+(ptr*8)," ",swap_screen,0,254);
-		if(gc=='H'&&ptr>1)
+		if(gc=='u'&&ptr>1)
 			ptr--;
-		if(gc=='P'&&ptr<(length-1))
+		if(gc=='d'&&ptr<(length-1))
 			ptr++;
 		print2(x+4,y+7+(ptr*8),"~",swap_screen,0,254);
 		} while(gc!=13&&gc!=27);
@@ -1613,7 +1628,23 @@ else
 		{
 		blitToScreen(swap_screen);
 //		blit(screen,swap_screen);
-		gc=getch();
+
+		gc=0;
+		if(IRE_TestKey(IREKEY_UP)) {
+			gc='u';
+		}
+		if(IRE_TestKey(IREKEY_DOWN)) {
+			gc='d';
+		}
+		if(IRE_TestKey(IREKEY_ESC)) {
+			gc=27;
+		}
+		if(IRE_TestKey(IREKEY_ENTER)) {
+			gc=13;
+		}
+		if(gc)
+			IRE_ClearKeyBuf();
+
 		if(sptr<20)
 			print2(x+4,y+7+(sptr*8)," ",swap_screen,0,254);
 //		else
@@ -1776,7 +1807,7 @@ int savegame_loadDOS(const char *filename) {
 	fread(&savegame.sy,1,2,fp);
 	fread(savegame.gotit,1,255,fp);
 	no_of_clothes=fgetc(fp);
-	// DOS version assumes 512 monsters
+	// DOS version just assumes 512 monsters
 	no_of_mons=512;
 	for(int ctr=0;ctr<no_of_mons;ctr++) {
 		for(int ctr2=0;ctr2<12;ctr2++) {

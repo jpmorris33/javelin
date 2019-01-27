@@ -1,0 +1,5 @@
+**/*.o
+javelin
+j16.jug
+utils/makejug
+utils/unjug
