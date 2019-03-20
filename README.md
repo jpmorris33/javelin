@@ -10,10 +10,10 @@ same, and converts the 320x200x256 game screen to an SDL surface only for
 the final output stage.
 In future I may try different approaches.
 
-As of this writing I haven't included the game's data files, as it contains
-third-party music files which I can't just re-license to BSD.  I may later
-upload a stripped-down datafile with the music missing or replaced so people
-can play with it.
+NOTE: The datafile included with the source code doesn't have the third-party
+music since I can't re-license those to BSD.  You can download a version with
+the music included from here:  http://it-he.org/down/javelin-jug-2019-01-23.zip
+
 
 Note that this is very old code!  I would not write a game engine like this
 now, and it's probably chock full of security holes.  I may consider refactoring
